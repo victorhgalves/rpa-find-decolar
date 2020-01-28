@@ -22,7 +22,7 @@ def runBrowser(url):
     chrome_options = webdriver.ChromeOptions()
     prefs = {"profile.default_content_setting_values.notifications" : 2}
     chrome_options.add_experimental_option("prefs",prefs)
-    browser = webdriver.Chrome(executable_path='chromedriver.exe',chrome_options=chrome_options)
+    browser = webdriver.Chrome(executable_path='C:\\Projetos\\ChromeDriver\\chromedriver.exe',chrome_options=chrome_options)
     browser.maximize_window()
     browser.get(url)
     return browser
@@ -74,16 +74,16 @@ def getCluster(browser):
         sleep(5)
         scroll = 0
         for x in range(0,100):
-            scroll += 10
+            scroll += 20
             browser.execute_script('window.scrollTo(0, {});'.format(scroll))
-        clusters = WebDriverWait(browser, 2).until(EC.visibility_of_all_elements_located((By.CLASS_NAME, 'cluster-container.COMMON')))
+        clusters = WebDriverWait(browser, 1).until(EC.visibility_of_all_elements_located((By.CLASS_NAME, 'cluster-container.COMMON')))
         return clusters
     except NoSuchElementException:
         pass
     except Exception as ex:
         return False
 
-@app.route('/api/buscar', methods=['POST', 'GET'])
+@app.route('/{}/api/buscar'.format(cfg.NAME_SYSTEM), methods=['POST', 'GET'])
 def executeProcess():
     try:
         content = request.get_json()
@@ -91,7 +91,10 @@ def executeProcess():
         destino = content['destino']
         data_ida = content['data_ida']
         data_volta = content['data_volta']
-        url = 'https://www.decolar.com/shop/flights/search/roundtrip/{}/{}/{}/{}/1/0/0/NA/NA/NA/NA/NA/?from=SB&di=1-0'.format(origem,destino,data_ida,data_volta)
+        if data_volta == '':
+            url = 'https://www.decolar.com/shop/flights/search/oneway/{}/{}/{}/1/0/0/NA/NA/NA/NA/?from=SB&di=1-0'.format(origem,destino,data_ida)
+        else:
+            url = 'https://www.decolar.com/shop/flights/search/roundtrip/{}/{}/{}/{}/1/0/0/NA/NA/NA/NA/NA/?from=SB&di=1-0'.format(origem,destino,data_ida,data_volta)
         browser = runBrowser(url)
         dados = executaBusca(browser)
         browser.close()
@@ -103,6 +106,6 @@ def executeProcess():
 
 
 if __name__ == '__main__':
-    app.run(host='AXH19030', debug=True,
+    app.run(host='HYDRA', debug=True,
 	threaded=True, use_reloader=False)
     
